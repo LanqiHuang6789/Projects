@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Explore Food Security and Health Disparities by State</title>
+  <style>
+    body {
+      font-family: Georgia, serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fdfbf7;
+      line-height: 1.7;
+      color: #222;
+    }
+
+    .page-wrapper {
+      max-width: 900px;
+      margin: 40px auto 60px auto;
+      padding: 0 24px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .info-card {
+      background-color: #f7f5ef;
+      border-left: 4px solid #7a8a43;
+      padding: 18px 22px;
+      margin: 40px 0 0 0;
+      font-size: 0.98rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      border-radius: 6px;
+    }
+
+    .info-card h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 1.25rem;
+      color: #2f4220;
+    }
+
+    .info-card ul {
+      margin-top: 8px;
+      margin-bottom: 8px;
+      padding-left: 22px;
+    }
+
+    form {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type=text] {
+      padding: 8px 10px;
+      min-width: 220px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    button {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      background: #2c3e50;
+      color: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    button:hover { background: #34495e; }
+
+    a {
+      color: #2c3e50;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .dashboard-link {
+      margin-top: 26px;
+      font-size: 0.98rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrapper">
+
+    <h1><b>Explore Food Security and Health Disparities by State</b></h1>
+    <p class="subtitle">
+      Enter a U.S. state name to see its food insecurity, obesity, and poverty statistics.
+    </p>
+
+    <form method="POST" action="/analyze">
+      <input type="text" name="usertext" placeholder="e.g., Alabama" required/>
+      <button type="submit">Submit</button>
+    </form>
+
+    <p class="dashboard-link">
+      <a href="/dashboard">Go to Full Analysis Dashboard →</a>
+    </p>
+
+    <section class="info-card">
+      <h2>About the Data</h2>
+      <p>
+        This website uses publicly available data from the
+        <strong>USDA Economic Research Service Food Environment Atlas (2015–2023)</strong>.
+        The Atlas provides state- and county-level indicators describing the U.S. food environment.
+      </p>
+
+      <p>Key themes include:</p>
+      <ul>
+        <li><strong>Food access</strong> — low-access populations, rural/urban differences</li>
+        <li><strong>Food assistance</strong> — SNAP participation, WIC redemptions</li>
+        <li><strong>Socioeconomic conditions</strong> — poverty rate, median household income</li>
+        <li><strong>Health outcomes</strong> — obesity, diabetes, household food insecurity</li>
+      </ul>
+
+      <p>
+        These indicators help illustrate how geography and economics shape health and food security across the U.S.
+        The dataset is fully open and released under a
+        <strong>public-domain (CC0) license</strong>, making it reusable for analysis and visualization.
+      </p>
+    </section>
+
+  </div>
+</body>
+</html>

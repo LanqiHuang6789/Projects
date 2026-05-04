@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Food Access & Equity Explorer</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 40px;
+      color: #111;
+      background-color: #fff;
+    }
+    h1 {
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 0.2em;
+    }
+    h2 {
+      font-size: 1.2em;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+    }
+    button {
+      background-color: #000;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      margin-right: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    button:hover {
+      background-color: #333;
+    }
+    input, select {
+      padding: 5px;
+      margin: 4px;
+      border-radius: 4px;
+      border: 1px solid #aaa;
+      font-size: 0.9em;
+    }
+    img {
+      margin-top: 10px;
+      max-width: 95%;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+    pre {
+      background: #f7f7f7;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.85em;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.85em;
+    }
+    th, td {
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background: #f4f4f4;
+    }
+    #clusterTable td {
+      padding: 3px 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Food Access & Equity Explorer</h1>
+<p><strong>USDA Food Environment Atlas — Interactive Analysis</strong></p>
+<p><a href="/">← Back to Simple State Lookup</a></p>
+
+<!-- 1) Variables and Summary -->
+<h2>1) Variables & Summary</h2>
+<button id="btnLoad">Load variables</button>
+<button id="btnSummary">Summary stats</button>
+<p id="varInfo" style="font-size:0.9em;"></p>
+<div id="summary"></div>
+
+<!-- 2) Correlation Heatmap -->
+<h2>2) Correlation heatmap (image)</h2>
+<button id="btnHeatmap">Generate heatmap</button>
+<div id="heatmap"></div>
+
+<!-- 3) Scatter plot -->
+<h2>3) Scatter plot</h2>
+<label>X variable (Variable_Code)</label>
+<select id="xVar" style="width:280px;"></select>
+<label>Y variable (Variable_Code)</label>
+<select id="yVar" style="width:280px;"></select>
+<button id="btnScatter">Plot</button>
+<div id="scatter"></div>
+
+<!-- 4) Clustering -->
+<h2>4) State clustering (parameter: k)</h2>
+<label>k (2–12)</label>
+<input id="kVal" type="number" min="2" max="12" value="3" style="width:50px;">
+<button id="btnCluster">Run</button>
+<div id="cluster"></div>
+
+<!-- 5) State snapshot -->
+<h2>5) State snapshot (your original endpoint)</h2>
+<label>State (full name or abbr)</label>
+<input id="stateName" type="text" placeholder="e.g., New York or NY">
+<button id="btnState">Fetch</button>
+<pre id="stateOut"></pre>
+
+<script>
+const el = id => document.getElementById(id);
+
+// Load variable list
+async function loadVariables() {
+  const res = await fetch("/api/variables");
+  const data = await res.json();
+  const vars = data.variables || [];
+  const options = vars.map(v => 
+    `<option value="${v.Variable_Code}">${v.Variable_Name} (${v.Variable_Code})</option>`
+  ).join("");
+  ["xVar","yVar"].forEach(sel => el(sel).innerHTML = options);
+  el("varInfo").textContent = `${vars.length} variables loaded.`;
+}
+
+// Summary stats
+async function loadSummary() {
+  const res = await fetch("/api/summary");
+  const data = await res.json();
+  const rows = data.map(d => `
+    <tr>
+      <td>${d.Variable_Name || d.Variable_Code}</td>
+      <td>${(d.mean || "").toFixed ? d.mean.toFixed(2): ""}</td>
+      <td>${(d.std || "").toFixed ? d.std.toFixed(2): ""}</td>
+      <td>${(d.min || "").toFixed ? d.min.toFixed(2): ""}</td>
+      <td>${(d.max || "").toFixed ? d.max.toFixed(2): ""}</td>
+      <td>${d.count}</td>
+    </tr>`).join("");
+  el("summary").innerHTML = `
+    <table>
+      <thead><tr><th>Variable</th><th>Mean</th><th>SD</th><th>Min</th><th>Max</th><th>N</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// Correlation heatmap
+async function plotHeatmap() {
+  const img = document.createElement("img");
+  img.src = "/api/plot/corr?t=" + Date.now();
+  el("heatmap").innerHTML = "";
+  el("heatmap").appendChild(img);
+}
+
+// Scatter
+async function plotScatter() {
+  const x = el("xVar").value;
+  const y = el("yVar").value;
+  if (!x || !y) return alert("Select both variables.");
+  const img = document.createElement("img");
+  img.src = `/api/plot/scatter/${x}/${y}?t=${Date.now()}`;
+  el("scatter").innerHTML = "";
+  el("scatter").appendChild(img);
+}
+
+// Clustering
+async function runCluster() {
+  const k = el("kVal").value;
+  const res = await fetch(`/api/cluster/${k}`);
+  const data = await res.json();
+  if (data.error) return alert(data.error);
+  const rows = data.map(r => `
+    <tr><td>${r.State}</td><td>${r.Name || ""}</td><td>${r.cluster}</td></tr>`).join("");
+  el("cluster").innerHTML = `
+    <table id="clusterTable">
+      <thead><tr><th>State</th><th>Name</th><th>Cluster</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// State snapshot
+async function fetchState() {
+  const state = el("stateName").value;
+  if (!state) return;
+  const res = await fetch(`/api/state/${state}`);
+  const data = await res.json();
+  el("stateOut").textContent = JSON.stringify(data, null, 2);
+}
+
+// Event bindings
+el("btnLoad").onclick = loadVariables;
+el("btnSummary").onclick = loadSummary;
+el("btnHeatmap").onclick = plotHeatmap;
+el("btnScatter").onclick = plotScatter;
+el("btnCluster").onclick = runCluster;
+el("btnState").onclick = fetchState;
+
+// Auto-load vars
+loadVariables();
+</script>
+</body>
+</html>

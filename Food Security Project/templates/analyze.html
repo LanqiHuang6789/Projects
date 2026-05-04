@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Results for {{ state }}</title>
+  <style>
+    body { font-family: Georgia, serif; margin: 40px; line-height: 1.6; }
+    h1 { font-size: 1.6em; color: #222; }
+    img { margin-top: 15px; border: 1px solid #ddd; border-radius: 8px; }
+    a { color: #2c3e50; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>Results for {{ state }}</h1>
+
+  <p>{{ result }}</p>
+
+  {% if chart_url %}
+  <img src="{{ url_for('static', filename=chart_url) }}" alt="Chart comparing {{ state }} to national averages"/>
+  {% endif %}
+
+  <p style="margin-top: 20px;"><a href="/">← Try another state</a></p>
+  <p><a href="/dashboard">Go to Full Analysis Dashboard →</a></p>
+</body>
+</html>
